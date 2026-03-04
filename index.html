@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>🎙️ Podcasts des Élèves</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#e71b7b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <style>
+    /* ===== RESET & BASE ===== */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #342f33;
+      /* Charcoal */
+      --surface: #2a2629;
+      --card: #bfbab9;
+      /* Light Grey */
+      --card-inner: #ffffff;
+      --accent: #e71b7b;
+      /* Pink */
+      --accent-hover: #c41465;
+      --text: #ffffff;
+      --text-dark: #342f33;
+      --muted: #8e8988;
+      --radius: 12px;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: 'Outfit', sans-serif;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ===== REMOVE ANIMATED BG ===== */
+    body::before {
+      display: none;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 48px 20px 24px;
+      background-color: var(--bg);
+    }
+
+    header .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--accent);
+      border-radius: 4px;
+      /* Flatter style */
+      padding: 6px 18px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      color: white;
+    }
+
+    header h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    header p {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+
+    /* ===== GRID ===== */
+    .grid {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 24px;
+      padding: 40px 24px 80px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Galaxy Tab A9 landscape ~1340px wide → 4-5 cols */
+    @media (min-width: 1100px) {
+      .grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+      }
+    }
+
+    /* Portrait ~800px wide → 3 cols */
+    @media (max-width: 860px) {
+      .grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+    }
+
+    /* ===== CARD ===== */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      border: none;
+      transition: transform .2s ease, box-shadow .2s ease;
+      position: relative;
+      box-shadow: var(--shadow);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .card:hover,
+    .card:active {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .card.playing {
+      box-shadow: 0 0 0 4px var(--accent);
+    }
+
+    /* Thumbnail */
+    .thumb-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .thumb-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity .3s ease;
+    }
+
+    .card:hover .thumb-wrap img {
+      opacity: 0.85;
+    }
+
+    /* Play icon overlay */
+    .play-overlay {
+      position: absolute;
+      z-index: 3;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px;
+      height: 60px;
+      background-color: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: white;
+      opacity: 0;
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .card:hover .play-overlay,
+    .card.playing .play-overlay {
+      opacity: 1;
+    }
+
+    .card.playing .play-overlay {
+      background-color: white;
+      color: var(--accent);
+    }
+
+    /* Card body */
+    .card-body {
+      padding: 16px;
+      background-color: white;
+      /* Clean white for text area */
+      color: var(--text-dark);
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    /* Progress bar */
+    .progress-wrap {
+      margin-top: 12px;
+      height: 6px;
+      background-color: #eee;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background-color: var(--accent);
+      width: 0%;
+      transition: width .2s linear;
+    }
+
+    /* Duration badge */
+    .duration-badge {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* ===== GLOBAL STOP BAR ===== */
+    .stop-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background-color: white;
+      border-top: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 16px 24px;
+      transform: translateY(100%);
+      transition: transform .3s ease;
+      color: var(--text-dark);
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .stop-bar.visible {
+      transform: translateY(0);
+    }
+
+    .stop-bar .now-playing-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .stop-bar .now-playing-label {
+      font-size: 0.75rem;
+      color: var(--accent);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stop-bar .now-playing-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+    }
+
+    .stop-btn {
+      background-color: var(--bg);
+      /* Charcoal */
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      padding: 12px 28px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color .2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stop-btn:hover {
+      background-color: var(--accent);
+    }
+
+    .stop-btn:active {
+      transform: scale(.98);
+    }
+
+    /* ===== NO RESULTS ===== */
+    .no-results {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+
+    .no-results .emoji {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="badge">🎙️ Podcasts des Élèves</div>
+    <h1>Nos Podcasts</h1>
+    <p>Appuie sur un podcast pour l'écouter ✨</p>
+  </header>
+
+
+
+  <div class="grid" id="grid"></div>
+
+  <div class="stop-bar" id="stopBar">
+    <div class="now-playing-info">
+      <div class="now-playing-label">▶ En cours</div>
+      <div class="now-playing-title" id="nowPlayingTitle">—</div>
+    </div>
+    <button class="stop-btn" id="stopBtn">⏹ Stop</button>
+  </div>
+
+  <script>
+    // ===== DATA =====
+    // Map each podcast to its image and a clean display title
+      const PODCASTS = [
+      {
+        file: "Podcasts/Alice et Léonie Notre école.wav",
+        image: "images/Alice et Léonie Notre école.jpg",
+        title: "Notre École",
+        authors: "Alice & Léonie"
+      },
+      {
+        file: "Podcasts/Efi et Harmonie les marmottes.wav",
+        image: "images/Efi et Harmonie les marmottes.jpg",
+        title: "Les Marmottes",
+        authors: "Efi & Harmonie"
+      },
+      {
+        file: "Podcasts/Eva et Lyne le ski alpin.wav",
+        image: "images/Eva et Lyne le ski alpin.jpg",
+        title: "Le Ski Alpin",
+        authors: "Eva & Lyne"
+      },
+      {
+        file: "Podcasts/Indiana Mael Le Ski Club.wav",
+        image: "images/Indiana Mael Le Ski Club.jpg",
+        title: "Le Ski Club",
+        authors: "Indiana & Maël"
+      },
+      {
+        file: "Podcasts/Jules et Emile les remontées mécaniques.wav",
+        image: "images/Jules.jpg",
+        title: "Les Remontées Mécaniques",
+        authors: "Jules & Emile"
+      },
+      {
+        file: "Podcasts/Le rap Tom et Leo.wav",
+        image: "images/Le rap Tom et Leo.jpg",
+        title: "Le Rap",
+        authors: "Tom & Leo"
+      },
+      {
+        file: "Podcasts/Leonard et Sandro Le Plan de l'Arc.wav",
+        image: "images/Leonard et Sandro Le Plan de l'Arc.jpg",
+        title: "Le Plan de l'Arc",
+        authors: "Léonard & Sandro"
+      },
+      {
+        file: "Podcasts/Les abeilles Giulia et Maya.wav",
+        image: "images/Les abeilles Giulia et Maya.jpg",
+        title: "Les Abeilles",
+        authors: "Giulia & Maya"
+      },
+      {
+        file: "Podcasts/Les énergies Lohan.wav",
+        image: "images/Les énergies Lohan.png",
+        title: "Les Énergies",
+        authors: "Lohan"
+      },
+      {
+        file: "Podcasts/amelie et thelma Le malinois.wav",
+        image: "images/amelie et thelma Le malinois.jpeg",
+        title: "Le Malinois",
+        authors: "Amélie & Thelma"
+      },
+      {
+        file: "Podcasts/cassius et Léonard La tortue marine.wav",
+        image: "images/cassius et Léonard La tortue marine.jpeg",
+        title: "La Tortue Marine",
+        authors: "Cassius & Léonard"
+      },
+      {
+        file: "Podcasts/clementine et Marius Coupe du monde ski.wav",
+        image: "images/Coupe.jpg",
+        title: "Coupe du Monde de Ski",
+        authors: "Clémentine & Marius"
+      },
+      {
+        file: "Podcasts/lucas et nathan  galettelucas et nathan  galette.wav",
+        image: "images/galette.png",
+        title: "La Galette des Rois",
+        authors: "Lucas & Nathan"
+      },
+      {
+        file: "Podcasts/mixage Katel Le cheval.wav",
+        image: "images/mixage Katel Le cheval.jpg",
+        title: "Le Cheval",
+        authors: "Katel"
+      },
+      {
+        file: "Podcasts/mixage ella livia Les sports de glace.wav",
+        image: "images/Patinage.jpg",
+        title: "Les Sports de Glace",
+        authors: "Ella & Livia"
+      },
+      {
+        file: "Podcasts/nathan final La poule.wav",
+        image: "images/nathan final La poule.jpg",
+        title: "La Poule",
+        authors: "Nathan"
+      },
+      {
+        file: "Podcasts/pia et Matys Le guépard.wav",
+        image: "images/pia et Matys Le guépard.jpg",
+        title: "Le Guépard",
+        authors: "Pia & Matys"
+      },
+      {
+        file: "Podcasts/thelma l'air.wav",
+        image: "images/thelma l'air.jpeg",
+        title: "L'Air",
+        authors: "Thelma"
+      }
+    ];
+
+    // ===== STATE =====
+    let currentAudio = null;
+    let currentCard = null;
+    let progressInterval = null;
+
+    // ===== BUILD GRID =====
+    const grid = document.getElementById('grid');
+    const stopBar = document.getElementById('stopBar');
+    const stopBtn = document.getElementById('stopBtn');
+    const nowPlayingTitle = document.getElementById('nowPlayingTitle');
+
+    function buildGrid(items) {
+      grid.innerHTML = '';
+      if (items.length === 0) {
+        grid.innerHTML = '<div class="no-results"><span class="emoji">🔍</span>Aucun podcast trouvé…</div>';
+        return;
+      }
+      items.forEach((pod, idx) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.dataset.idx = idx;
+        card.innerHTML = `
+          <div class="thumb-wrap">
+            <img src="${pod.image}?t=${Date.now()}" alt="${pod.title}" />
+            <div class="play-overlay" id="play-icon-${idx}">▶</div>
+          </div>
+          <div class="card-body">
+            <div class="card-title">${pod.authors}<br><span style="color:var(--muted);font-weight:600">${pod.title}</span></div>
+            <div class="progress-wrap"><div class="progress-bar" id="prog-${idx}"></div></div>
+            <div class="duration-badge"><div class="dot"></div><span id="dur-${idx}">—</span></div>
+          </div>
+        `;
+        card.addEventListener('click', () => togglePlay(pod, card, idx));
+        grid.appendChild(card);
+      });
+    }
+
+    buildGrid(PODCASTS);
+
+    // ===== PLAY / PAUSE =====
+    function togglePlay(pod, card, idx) {
+      const isSameCard = currentCard === card;
+
+      // Stop current
+      stopEverything();
+
+      if (isSameCard) return; // was already playing → just stop
+
+      // Start new
+      const audio = new Audio(pod.file);
+      currentAudio = audio;
+      currentCard = card;
+      card.classList.add('playing');
+      document.getElementById('play-icon-' + idx).textContent = '⏸';
+      nowPlayingTitle.textContent = pod.authors + ' — ' + pod.title;
+      stopBar.classList.add('visible');
+
+      audio.play().catch(() => { });
+
+      audio.addEventListener('loadedmetadata', () => {
+        document.getElementById('dur-' + idx).textContent = formatTime(audio.duration);
+      });
+
+      progressInterval = setInterval(() => {
+        const prog = document.getElementById('prog-' + idx);
+        if (prog && audio.duration) {
+          prog.style.width = (audio.currentTime / audio.duration * 100) + '%';
+          document.getElementById('dur-' + idx).textContent =
+            formatTime(audio.currentTime) + ' / ' + formatTime(audio.duration);
+        }
+      }, 300);
+
+      audio.addEventListener('ended', stopEverything);
+    }
+
+    function stopEverything() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+      }
+      if (currentCard) {
+        currentCard.classList.remove('playing');
+        const idx = currentCard.dataset.idx;
+        const icon = document.getElementById('play-icon-' + idx);
+        const prog = document.getElementById('prog-' + idx);
+        if (icon) icon.textContent = '▶';
+        if (prog) prog.style.width = '0%';
+        currentCard = null;
+      }
+      clearInterval(progressInterval);
+      stopBar.classList.remove('visible');
+    }
+
+    stopBtn.addEventListener('click', stopEverything);
+
+    // ===== FORMAT TIME =====
+    function formatTime(s) {
+      if (!isFinite(s)) return '—';
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return m + ':' + String(sec).padStart(2, '0');
+    }
+
+    // ===== SERVICE WORKER =====
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => { });
+      });
+    }
+
+  </script>
+</body>
+
+</html>
