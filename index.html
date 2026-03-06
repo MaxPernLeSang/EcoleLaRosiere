@@ -24,13 +24,10 @@
 
     :root {
       --bg: #342f33;
-      /* Charcoal */
       --surface: #2a2629;
       --card: #bfbab9;
-      /* Light Grey */
       --card-inner: #ffffff;
       --accent: #e71b7b;
-      /* Pink */
       --accent-hover: #c41465;
       --text: #ffffff;
       --text-dark: #342f33;
@@ -47,11 +44,8 @@
       font-family: 'Outfit', sans-serif;
       color: var(--text);
       overflow-x: hidden;
-    }
-
-    /* ===== REMOVE ANIMATED BG ===== */
-    body::before {
-      display: none;
+      /* EMPECHE LE REFRESH CHROME ANDROID */
+      overscroll-behavior-y: contain;
     }
 
     /* ===== HEADER ===== */
@@ -69,7 +63,6 @@
       gap: 8px;
       background-color: var(--accent);
       border-radius: 4px;
-      /* Flatter style */
       padding: 6px 18px;
       font-size: 0.8rem;
       font-weight: 700;
@@ -102,32 +95,21 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 24px;
-      padding: 40px 24px 80px;
+      padding: 40px 24px 120px; /* Ajout de marge en bas pour la barre de stop */
       max-width: 1400px;
       margin: 0 auto;
     }
 
-    /* Galaxy Tab A9 landscape ~1340px wide → 4-5 cols */
     @media (min-width: 1100px) {
-      .grid {
-        grid-template-columns: repeat(5, 1fr);
-        gap: 20px;
-      }
+      .grid { grid-template-columns: repeat(5, 1fr); gap: 20px; }
     }
 
-    /* Portrait ~800px wide → 3 cols */
     @media (max-width: 860px) {
-      .grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-      }
+      .grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
     }
 
     @media (max-width: 520px) {
-      .grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-      }
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
     }
 
     /* ===== CARD ===== */
@@ -144,17 +126,13 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    .card:hover,
-    .card:active {
+    .card:hover, .card:active {
       transform: translateY(-4px);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     }
 
-    .card.playing {
-      box-shadow: 0 0 0 4px var(--accent);
-    }
+    .card.playing { box-shadow: 0 0 0 4px var(--accent); }
 
-    /* Thumbnail */
     .thumb-wrap {
       position: relative;
       width: 100%;
@@ -171,11 +149,6 @@
       transition: opacity .3s ease;
     }
 
-    .card:hover .thumb-wrap img {
-      opacity: 0.85;
-    }
-
-    /* Play icon overlay */
     .play-overlay {
       position: absolute;
       z-index: 3;
@@ -195,70 +168,25 @@
       transition: opacity .2s ease, transform .2s ease;
     }
 
-    .card:hover .play-overlay,
-    .card.playing .play-overlay {
-      opacity: 1;
-    }
+    .card:hover .play-overlay, .card.playing .play-overlay { opacity: 1; }
+    .card.playing .play-overlay { background-color: white; color: var(--accent); }
 
-    .card.playing .play-overlay {
-      background-color: white;
-      color: var(--accent);
-    }
-
-    /* Card body */
-    .card-body {
-      padding: 16px;
-      background-color: white;
-      /* Clean white for text area */
-      color: var(--text-dark);
-    }
-
+    .card-body { padding: 16px; background-color: white; color: var(--text-dark); }
     .card-title {
-      font-size: 0.95rem;
-      font-weight: 700;
-      line-height: 1.4;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
+      font-size: 0.95rem; font-weight: 700; line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+      text-transform: uppercase; letter-spacing: 0.02em;
     }
 
-    /* Progress bar */
-    .progress-wrap {
-      margin-top: 12px;
-      height: 6px;
-      background-color: #eee;
-      border-radius: 3px;
-      overflow: hidden;
-    }
+    .progress-wrap { margin-top: 12px; height: 6px; background-color: #eee; border-radius: 3px; overflow: hidden; }
+    .progress-bar { height: 100%; background-color: var(--accent); width: 0%; transition: width .2s linear; }
+    .duration-badge { margin-top: 8px; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); font-weight: 600; }
 
-    .progress-bar {
-      height: 100%;
-      background-color: var(--accent);
-      width: 0%;
-      transition: width .2s linear;
-    }
-
-    /* Duration badge */
-    .duration-badge {
-      margin-top: 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    /* ===== GLOBAL STOP BAR ===== */
+    /* ===== STOP BAR ===== */
     .stop-bar {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       z-index: 100;
       background-color: white;
       border-top: 2px solid var(--accent);
@@ -272,73 +200,23 @@
       box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
     }
 
-    .stop-bar.visible {
-      transform: translateY(0);
-    }
-
-    .stop-bar .now-playing-info {
-      flex: 1;
-      overflow: hidden;
-    }
-
-    .stop-bar .now-playing-label {
-      font-size: 0.75rem;
-      color: var(--accent);
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .stop-bar .now-playing-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      text-transform: uppercase;
-    }
+    .stop-bar.visible { transform: translateY(0); }
+    .stop-bar .now-playing-info { flex: 1; overflow: hidden; }
+    .stop-bar .now-playing-label { font-size: 0.75rem; color: var(--accent); font-weight: 800; text-transform: uppercase; }
+    .stop-bar .now-playing-title { font-size: 1.1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
 
     .stop-btn {
       background-color: var(--bg);
-      /* Charcoal */
-      border: none;
-      border-radius: 4px;
-      color: #fff;
-      font-family: 'Outfit', sans-serif;
-      font-size: 1rem;
-      font-weight: 800;
-      padding: 12px 28px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background-color .2s;
+      border: none; border-radius: 4px;
+      color: #fff; font-family: 'Outfit', sans-serif;
+      font-size: 1rem; font-weight: 800;
+      padding: 12px 28px; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
     }
+    .stop-btn:hover { background-color: var(--accent); }
 
-    .stop-btn:hover {
-      background-color: var(--accent);
-    }
-
-    .stop-btn:active {
-      transform: scale(.98);
-    }
-
-    /* ===== NO RESULTS ===== */
-    .no-results {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-      font-size: 1.1rem;
-    }
-
-    .no-results .emoji {
-      font-size: 3rem;
-      display: block;
-      margin-bottom: 12px;
-    }
+    .no-results { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--muted); font-size: 1.1rem; }
   </style>
 </head>
 
@@ -349,8 +227,6 @@
     <h1>Nos Podcasts</h1>
     <p>Appuie sur un podcast pour l'écouter</p>
   </header>
-
-
 
   <div class="grid" id="grid"></div>
 
@@ -364,116 +240,25 @@
 
   <script>
     // ===== DATA =====
-    // Map each podcast to its image and a clean display title
-      const PODCASTS = [
-      {
-        file: "Podcasts/1.wav",
-        image: "images/alice_et_leonie_notre_ecole.jpg",
-        title: "Notre École",
-        authors: "Alice & Léonie"
-      },
-      {
-        file: "Podcasts/2.wav",
-        image: "images/efi_et_harmonie_les_marmottes.jpg",
-        title: "Les Marmottes",
-        authors: "Efi & Harmonie"
-      },
-      {
-        file: "Podcasts/3.wav",
-        image: "images/eva_et_lyne_le_ski_alpin.jpg",
-        title: "Le Ski Alpin",
-        authors: "Eva & Lyne"
-      },
-      {
-        file: "Podcasts/4.wav",
-        image: "images/indiana_mael_le_ski_club.jpg",
-        title: "Le Ski Club",
-        authors: "Indiana & Maël"
-      },
-      {
-        file: "Podcasts/5.wav",
-        image: "images/jules.jpg",
-        title: "Les Remontées Mécaniques",
-        authors: "Jules & Emile"
-      },
-      {
-        file: "Podcasts/6.wav",
-        image: "images/le_rap_tom_et_leo.jpg",
-        title: "Le Rap",
-        authors: "Tom & Leo"
-      },
-      {
-        file: "Podcasts/7.wav",
-        image: "images/leonard_et_sandro_le_plan_de_l_arc.jpg",
-        title: "Le Plan de l'Arc",
-        authors: "Léonard & Sandro"
-      },
-      {
-        file: "Podcasts/8.wav",
-        image: "images/les_abeilles_giulia_et_maya.jpg",
-        title: "Les Abeilles",
-        authors: "Giulia & Maya"
-      },
-      {
-        file: "Podcasts/9.wav",
-        image: "images/les_energies_lohan.png",
-        title: "Les Énergies",
-        authors: "Lohan"
-      },
-      {
-        file: "Podcasts/10.wav",
-        image: "images/amelie_et_thelma_le_malinois.jpeg",
-        title: "Le Malinois",
-        authors: "Amélie & Thelma"
-      },
-      {
-        file: "Podcasts/11.wav",
-        image: "images/cassius_et_leonard_la_tortue_marine.jpeg",
-        title: "La Tortue Marine",
-        authors: "Cassius & Léonard"
-      },
-      {
-        file: "Podcasts/12.wav",
-        image: "images/coupe.jpg",
-        title: "Coupe du Monde de Ski",
-        authors: "Clémentine & Marius"
-      },
-      {
-        file: "Podcasts/13.wav",
-        image: "images/galette.png",
-        title: "La Galette des Rois",
-        authors: "Lucas & Nathan"
-      },
-      {
-        file: "Podcasts/14.wav",
-        image: "images/mixage_katel_le_cheval.jpg",
-        title: "Le Cheval",
-        authors: "Katel"
-      },
-      {
-        file: "Podcasts/15.wav",
-        image: "images/patinage.jpg",
-        title: "Les Sports de Glace",
-        authors: "Ella & Livia"
-      },
-      {
-        file: "Podcasts/16.wav",
-        image: "images/nathan_final_la_poule.jpg",
-        title: "La Poule",
-        authors: "Nathan"
-      },
-      {
-        file: "Podcasts/17.wav",
-        image: "images/pia_et_matys_le_guepard.jpg",
-        title: "Le Guépard",
-        authors: "Pia & Matys"
-      },
-      {
-        file: "Podcasts/18.wav",
-        image: "images/thelma_l_air.jpeg",
-        title: "L'Air",
-        authors: "Thelma"
-      }
+    const PODCASTS = [
+      { file: "Podcasts/1.wav", image: "images/alice_et_leonie_notre_ecole.jpg", title: "Notre École", authors: "Alice & Léonie" },
+      { file: "Podcasts/2.wav", image: "images/efi_et_harmonie_les_marmottes.jpg", title: "Les Marmottes", authors: "Efi & Harmonie" },
+      { file: "Podcasts/3.wav", image: "images/eva_et_lyne_le_ski_alpin.jpg", title: "Le Ski Alpin", authors: "Eva & Lyne" },
+      { file: "Podcasts/4.wav", image: "images/indiana_mael_le_ski_club.jpg", title: "Le Ski Club", authors: "Indiana & Maël" },
+      { file: "Podcasts/5.wav", image: "images/jules.jpg", title: "Les Remontées Mécaniques", authors: "Jules & Emile" },
+      { file: "Podcasts/6.wav", image: "images/le_rap_tom_et_leo.jpg", title: "Le Rap", authors: "Tom & Leo" },
+      { file: "Podcasts/7.wav", image: "images/leonard_et_sandro_le_plan_de_l_arc.jpg", title: "Le Plan de l'Arc", authors: "Léonard & Sandro" },
+      { file: "Podcasts/8.wav", image: "images/les_abeilles_giulia_et_maya.jpg", title: "Les Abeilles", authors: "Giulia & Maya" },
+      { file: "Podcasts/9.wav", image: "images/les_energies_lohan.png", title: "Les Énergies", authors: "Lohan" },
+      { file: "Podcasts/10.wav", image: "images/amelie_et_thelma_le_malinois.jpeg", title: "Le Malinois", authors: "Amélie & Thelma" },
+      { file: "Podcasts/11.wav", image: "images/cassius_et_leonard_la_tortue_marine.jpeg", title: "La Tortue Marine", authors: "Cassius & Léonard" },
+      { file: "Podcasts/12.wav", image: "images/coupe.jpg", title: "Coupe du Monde de Ski", authors: "Clémentine & Marius" },
+      { file: "Podcasts/13.wav", image: "images/galette.png", title: "La Galette des Rois", authors: "Lucas & Nathan" },
+      { file: "Podcasts/14.wav", image: "images/mixage_katel_le_cheval.jpg", title: "Le Cheval", authors: "Katel" },
+      { file: "Podcasts/15.wav", image: "images/patinage.jpg", title: "Les Sports de Glace", authors: "Ella & Livia" },
+      { file: "Podcasts/16.wav", image: "images/nathan_final_la_poule.jpg", title: "La Poule", authors: "Nathan" },
+      { file: "Podcasts/17.wav", image: "images/pia_et_matys_le_guepard.jpg", title: "Le Guépard", authors: "Pia & Matys" },
+      { file: "Podcasts/18.wav", image: "images/thelma_l_air.jpeg", title: "L'Air", authors: "Thelma" }
     ];
 
     // ===== STATE =====
@@ -481,7 +266,6 @@
     let currentCard = null;
     let progressInterval = null;
 
-    // ===== BUILD GRID =====
     const grid = document.getElementById('grid');
     const stopBar = document.getElementById('stopBar');
     const stopBtn = document.getElementById('stopBtn');
@@ -505,7 +289,7 @@
           <div class="card-body">
             <div class="card-title">${pod.authors}<br><span style="color:var(--muted);font-weight:600">${pod.title}</span></div>
             <div class="progress-wrap"><div class="progress-bar" id="prog-${idx}"></div></div>
-            <div class="duration-badge"><div class="dot"></div><span id="dur-${idx}">—</span></div>
+            <div class="duration-badge"><span id="dur-${idx}">—</span></div>
           </div>
         `;
         card.addEventListener('click', () => togglePlay(pod, card, idx));
@@ -515,16 +299,11 @@
 
     buildGrid(PODCASTS);
 
-    // ===== PLAY / PAUSE =====
     function togglePlay(pod, card, idx) {
       const isSameCard = currentCard === card;
-
-      // Stop current
       stopEverything();
+      if (isSameCard) return;
 
-      if (isSameCard) return; // was already playing → just stop
-
-      // Start new
       const audio = new Audio(pod.file);
       currentAudio = audio;
       currentCard = card;
@@ -543,8 +322,7 @@
         const prog = document.getElementById('prog-' + idx);
         if (prog && audio.duration) {
           prog.style.width = (audio.currentTime / audio.duration * 100) + '%';
-          document.getElementById('dur-' + idx).textContent =
-            formatTime(audio.currentTime) + ' / ' + formatTime(audio.duration);
+          document.getElementById('dur-' + idx).textContent = formatTime(audio.currentTime) + ' / ' + formatTime(audio.duration);
         }
       }, 300);
 
@@ -554,16 +332,13 @@
     function stopEverything() {
       if (currentAudio) {
         currentAudio.pause();
-        currentAudio.currentTime = 0;
         currentAudio = null;
       }
       if (currentCard) {
         currentCard.classList.remove('playing');
         const idx = currentCard.dataset.idx;
         const icon = document.getElementById('play-icon-' + idx);
-        const prog = document.getElementById('prog-' + idx);
         if (icon) icon.textContent = '▶';
-        if (prog) prog.style.width = '0%';
         currentCard = null;
       }
       clearInterval(progressInterval);
@@ -572,7 +347,6 @@
 
     stopBtn.addEventListener('click', stopEverything);
 
-    // ===== FORMAT TIME =====
     function formatTime(s) {
       if (!isFinite(s)) return '—';
       const m = Math.floor(s / 60);
@@ -580,14 +354,18 @@
       return m + ':' + String(sec).padStart(2, '0');
     }
 
-    // ===== SERVICE WORKER =====
+    // ===== SECURITE ANTI-REFRESH JS =====
+    window.addEventListener('touchmove', function(e) {
+      if (window.scrollY <= 0 && e.touches[0].pageY > 0) {
+        // Bloque le geste si on tente de tirer vers le bas alors qu'on est déjà en haut
+      }
+    }, { passive: true });
+
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(() => { });
       });
     }
-
   </script>
 </body>
-
 </html>
