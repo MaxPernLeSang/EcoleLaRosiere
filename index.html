@@ -180,6 +180,14 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }
+    // Force le plein écran au premier clic pour cacher l'interface Android
+document.addEventListener('click', function() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(e => {
+      console.log("Plein écran refusé ou déjà actif");
+    });
+  }
+}, { once: true }); // Ne s'exécute qu'une seule fois
   </script>
 </body>
 </html>
