@@ -79,68 +79,104 @@
 
     <script>
         const PODCASTS = [
-            { file: "Podcasts/1.wav", image: "images/alice_et_leonie_notre_ecole.jpg", title: "Notre École", authors: "Alice & Léonie" },
-            { file: "Podcasts/2.wav", image: "images/efi_et_harmonie_les_marmottes.jpg", title: "Les Marmottes", authors: "Efi & Harmonie" },
-            { file: "Podcasts/3.wav", image: "images/eva_et_lyne_le_ski_alpin.jpg", title: "Le Ski Alpin", authors: "Eva & Lyne" },
-            { file: "Podcasts/4.wav", image: "images/indiana_mael_le_ski_club.jpg", title: "Le Ski Club", authors: "Indiana & Maël" },
-            { file: "Podcasts/5.wav", image: "images/jules.jpg", title: "Les Remontées Mécaniques", authors: "Jules & Emile" },
-            { file: "Podcasts/6.wav", image: "images/le_rap_tom_et_leo.jpg", title: "Le Rap", authors: "Tom & Leo" },
-            { file: "Podcasts/7.wav", image: "images/leonard_et_sandro_le_plan_de_l_arc.jpg", title: "Le Plan de l'Arc", authors: "Léonard & Sandro" },
-            { file: "Podcasts/8.wav", image: "images/les_abeilles_giulia_et_maya.jpg", title: "Les Abeilles", authors: "Giulia & Maya" },
-            { file: "Podcasts/9.wav", image: "images/les_energies_lohan.png", title: "Les Énergies", authors: "Lohan" },
-            { file: "Podcasts/10.wav", image: "images/amelie_et_thelma_le_malinois.jpeg", title: "Le Malinois", authors: "Amélie & Thelma" },
-            { file: "Podcasts/11.wav", image: "images/cassius_et_leonard_la_tortue_marine.jpeg", title: "La Tortue Marine", authors: "Cassius & Léonard" },
-            { file: "Podcasts/12.wav", image: "images/coupe.jpg", title: "Coupe du Monde de Ski", authors: "Clémentine & Marius" },
-            { file: "Podcasts/13.wav", image: "images/galette.png", title: "La Galette des Rois", authors: "Lucas & Nathan" },
-            { file: "Podcasts/14.wav", image: "images/mixage_katel_le_cheval.jpg", title: "Le Cheval", authors: "Katel" },
-            { file: "Podcasts/15.wav", image: "images/patinage.jpg", title: "Les Sports de Glace", authors: "Ella & Livia" },
-            { file: "Podcasts/16.wav", image: "images/nathan_final_la_poule.jpg", title: "La Poule", authors: "Nathan" },
-            { file: "Podcasts/17.wav", image: "images/pia_et_matys_le_guepard.jpg", title: "Le Guépard", authors: "Pia & Matys" },
-            { file: "Podcasts/18.wav", image: "images/thelma_l_air.jpeg", title: "L'Air", authors: "Thelma" }
-        ];
+    { file: "Podcasts/1.wav", image: "images/alice_et_leonie_notre_ecole.jpg", title: "Notre École", authors: "Alice & Léonie" },
+    { file: "Podcasts/2.wav", image: "images/efi_et_harmonie_les_marmottes.jpg", title: "Les Marmottes", authors: "Efi & Harmonie" },
+    { file: "Podcasts/3.wav", image: "images/eva_et_lyne_le_ski_alpin.jpg", title: "Le Ski Alpin", authors: "Eva & Lyne" },
+    { file: "Podcasts/4.wav", image: "images/indiana_mael_le_ski_club.jpg", title: "Le Ski Club", authors: "Indiana & Maël" },
+    { file: "Podcasts/5.wav", image: "images/jules.jpg", title: "Les Remontées Mécaniques", authors: "Jules & Emile" },
+    { file: "Podcasts/6.wav", image: "images/le_rap_tom_et_leo.jpg", title: "Le Rap", authors: "Tom & Leo" },
+    { file: "Podcasts/7.wav", image: "images/leonard_et_sandro_le_plan_de_l_arc.jpg", title: "Le Plan de l'Arc", authors: "Léonard & Sandro" },
+    { file: "Podcasts/8.wav", image: "images/les_abeilles_giulia_et_maya.jpg", title: "Les Abeilles", authors: "Giulia & Maya" },
+    { file: "Podcasts/9.wav", image: "images/les_energies_lohan.png", title: "Les Énergies", authors: "Lohan" },
+    { file: "Podcasts/10.wav", image: "images/amelie_et_thelma_le_malinois.jpeg", title: "Le Malinois", authors: "Amélie & Thelma" },
+    { file: "Podcasts/11.wav", image: "images/cassius_et_leonard_la_tortue_marine.jpeg", title: "La Tortue Marine", authors: "Cassius & Léonard" },
+    { file: "Podcasts/12.wav", image: "images/coupe.jpg", title: "Coupe du Monde de Ski", authors: "Clémentine & Marius" },
+    { file: "Podcasts/13.wav", image: "images/galette.png", title: "La Galette des Rois", authors: "Lucas & Nathan" },
+    { file: "Podcasts/14.wav", image: "images/mixage_katel_le_cheval.jpg", title: "Le Cheval", authors: "Katel" },
+    { file: "Podcasts/15.wav", image: "images/patinage.jpg", title: "Les Sports de Glace", authors: "Ella & Livia" },
+    { file: "Podcasts/16.wav", image: "images/nathan_final_la_poule.jpg", title: "La Poule", authors: "Nathan" },
+    { file: "Podcasts/17.wav", image: "images/pia_et_matys_le_guepard.jpg", title: "Le Guépard", authors: "Pia & Matys" },
+    { file: "Podcasts/18.wav", image: "images/thelma_l_air.jpeg", title: "L'Air", authors: "Thelma" }
+];
 
-        let audio = null;
-        let activeCard = null;
+let audio = null;
+let activeCard = null;
+let timer = null; // Pour mettre à jour le temps
 
-        // LA FONCTION MAGIQUE POUR LE PLEIN ÉCRAN
-        function launchApp() {
-            const de = document.documentElement;
-            if (de.requestFullscreen) { de.requestFullscreen(); }
-            else if (de.webkitRequestFullscreen) { de.webkitRequestFullscreen(); }
+function launchApp() {
+    const de = document.documentElement;
+    if (de.requestFullscreen) { de.requestFullscreen(); }
+    else if (de.webkitRequestFullscreen) { de.webkitRequestFullscreen(); }
+    document.getElementById('fullscreen-setup').style.display = 'none';
+}
+
+const grid = document.getElementById('grid');
+PODCASTS.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.innerHTML = `
+        <img src="${p.image}">
+        <div class="card-body">
+            <b>${p.authors}</b><br>${p.title}
+            <div style="height:4px; background:#eee; margin-top:8px; border-radius:2px; overflow:hidden;">
+                <div id="prog-${i}" style="height:100%; width:0%; background:var(--accent); transition: width 0.3s;"></div>
+            </div>
+        </div>`;
+    div.onclick = () => play(p, div, i);
+    grid.appendChild(div);
+});
+
+function play(p, el, idx) {
+    if (activeCard === el) { stopAll(); return; }
+    stopAll();
+
+    audio = new Audio(p.file);
+    activeCard = el;
+    el.classList.add('playing');
+    document.getElementById('stopBar').classList.add('visible');
+
+    audio.play();
+
+    // Mise à jour du temps et de la barre
+    timer = setInterval(() => {
+        if (audio && audio.duration) {
+            const current = formatTime(audio.currentTime);
+            const total = formatTime(audio.duration);
+            const percent = (audio.currentTime / audio.duration) * 100;
             
-            // On cache l'écran de démarrage
-            document.getElementById('fullscreen-setup').style.display = 'none';
+            // Met à jour le texte dans la barre de stop
+            document.getElementById('info').innerHTML = 
+                `<b>${p.authors}</b> — ${current} / ${total}`;
+            
+            // Met à jour la petite barre sur la carte
+            document.getElementById(`prog-${idx}`).style.width = percent + "%";
         }
+    }, 500);
 
-        const grid = document.getElementById('grid');
-        PODCASTS.forEach((p, i) => {
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.innerHTML = `<img src="${p.image}"><div class="card-body"><b>${p.authors}</b><br>${p.title}</div>`;
-            div.onclick = () => play(p, div);
-            grid.appendChild(div);
-        });
+    audio.onended = stopAll;
+}
 
-        function play(p, el) {
-            if (activeCard === el) { stopAll(); return; }
-            stopAll();
-            audio = new Audio(p.file);
-            audio.play();
-            activeCard = el;
-            el.classList.add('playing');
-            document.getElementById('info').innerText = p.authors + " - " + p.title;
-            document.getElementById('stopBar').classList.add('visible');
-            audio.onended = stopAll;
-        }
+function stopAll() {
+    if (audio) { audio.pause(); audio = null; }
+    if (timer) { clearInterval(timer); timer = null; }
+    if (activeCard) { 
+        // On remet toutes les barres à zéro
+        const bars = document.querySelectorAll('[id^="prog-"]');
+        bars.forEach(b => b.style.width = "0%");
+        activeCard.classList.remove('playing'); 
+        activeCard = null; 
+    }
+    document.getElementById('stopBar').classList.remove('visible');
+}
 
-        function stopAll() {
-            if (audio) { audio.pause(); audio = null; }
-            if (activeCard) { activeCard.classList.remove('playing'); activeCard = null; }
-            document.getElementById('stopBar').classList.remove('visible');
-        }
+// Fonction pour transformer les secondes en 0:00
+function formatTime(secs) {
+    const min = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return min + ":" + (s < 10 ? "0" : "") + s;
+}
 
-        // Empêcher le menu contextuel (clic droit / appui long)
-        window.oncontextmenu = function() { return false; }
+window.oncontextmenu = function() { return false; }
     </script>
 </body>
 </html>
