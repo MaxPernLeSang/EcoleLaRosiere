@@ -1,193 +1,146 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>🎙️ Podcasts des Élèves</title>
-  
-  <link rel="manifest" href="manifest.json" />
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet" />
-  
-  <meta name="theme-color" content="#e71b7b" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎙️ Podcasts La Rosière</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --accent: #e71b7b; --bg: #342f33; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        /* BLOQUER LE REFRESH ET LE REBOND */
+        html, body { 
+            width: 100%; height: 100%; 
+            background: var(--bg); 
+            font-family: 'Outfit', sans-serif; 
+            overflow: hidden; /* On bloque le scroll global ici */
+            overscroll-behavior: none;
+        }
 
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #342f33; --surface: #2a2629; --card: #bfbab9;
-      --accent: #e71b7b; --text: #ffffff; --text-dark: #342f33;
-      --muted: #8e8988; --radius: 12px;
-    }
+        /* BOUTON PLEIN ÉCRAN (Indispensable pour Android) */
+        #fullscreen-setup {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; text-align: center; padding: 20px;
+        }
+        .btn-start {
+            background: var(--accent); color: white; border: none;
+            padding: 20px 40px; font-size: 1.5rem; font-weight: 900;
+            border-radius: 50px; cursor: pointer; margin-top: 20px;
+        }
 
-    html, body {
-      width: 100%; height: 100%;
-      background: var(--bg);
-      font-family: 'Outfit', sans-serif;
-      color: var(--text);
-      /* Bloque le refresh visuel de Chrome */
-      overscroll-behavior-y: none;
-    }
+        /* ZONE DE SCROLL INTERNE (Pour que le scroll marche sans le refresh) */
+        #main-container {
+            height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+            padding: 20px;
+        }
 
-    body { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
+        header { text-align: center; padding: 40px 0; color: white; }
+        .grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+            gap: 20px; max-width: 1200px; margin: 0 auto; padding-bottom: 150px;
+        }
+        .card { background: #bfbab9; border-radius: 12px; overflow: hidden; color: #342f33; }
+        .card img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+        .card-body { padding: 15px; background: white; }
+        .card.playing { outline: 5px solid var(--accent); }
 
-    header { text-align: center; padding: 40px 20px 20px; }
-    header h1 { font-size: 2.5rem; font-weight: 900; text-transform: uppercase; }
-    header p { color: var(--muted); margin-top: 8px; }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 20px;
-      padding: 20px 20px 140px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .card {
-      background: var(--card); border-radius: var(--radius);
-      overflow: hidden; cursor: pointer; transition: transform 0.2s;
-      user-select: none; -webkit-tap-highlight-color: transparent;
-    }
-    .card:active { transform: scale(0.96); }
-    .card.playing { outline: 4px solid var(--accent); }
-
-    .thumb-wrap { position: relative; width: 100%; aspect-ratio: 1/1; background: #000; }
-    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
-    
-    .play-overlay {
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      width: 50px; height: 50px; background: var(--accent);
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      opacity: 0; transition: opacity 0.2s; color: white;
-    }
-    .card.playing .play-overlay { opacity: 1; background: white; color: var(--accent); }
-
-    .card-body { padding: 15px; background: white; color: var(--text-dark); }
-    .card-title { font-weight: 700; font-size: 0.9rem; text-transform: uppercase; }
-
-    .progress-bar { height: 4px; background: var(--accent); width: 0%; margin-top: 10px; transition: width 0.3s; }
-
-    .stop-bar {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: white; border-top: 3px solid var(--accent);
-      display: flex; align-items: center; padding: 15px 25px;
-      transform: translateY(100%); transition: transform 0.3s ease;
-      z-index: 1000; color: var(--text-dark);
-    }
-    .stop-bar.visible { transform: translateY(0); }
-    .stop-btn {
-      background: var(--bg); color: white; border: none;
-      padding: 10px 20px; border-radius: 5px; font-weight: 800;
-    }
-  </style>
+        .stop-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white; padding: 20px; display: flex;
+            align-items: center; justify-content: space-between;
+            transform: translateY(100%); transition: 0.3s; z-index: 1000;
+            border-top: 4px solid var(--accent);
+        }
+        .stop-bar.visible { transform: translateY(0); }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>Nos Podcasts</h1>
-    <p>Clique sur une image pour écouter</p>
-  </header>
-
-  <div class="grid" id="grid"></div>
-
-  <div class="stop-bar" id="stopBar">
-    <div style="flex:1; overflow:hidden;">
-      <div style="font-size:0.7rem; color:var(--accent); font-weight:bold;">LECTURE EN COURS</div>
-      <div id="nowPlayingTitle" style="font-weight:700; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">—</div>
+    <div id="fullscreen-setup">
+        <h1>🎙️ Radio La Rosière</h1>
+        <p>Appuie sur le bouton pour lancer le mode tablette sans barres de navigation.</p>
+        <button class="btn-start" onclick="launchApp()">LANCER L'APPLICATION</button>
     </div>
-    <button class="stop-btn" id="stopBtn">STOP</button>
-  </div>
 
-  <script>
-    const PODCASTS = [
-      { file: "Podcasts/1.wav", image: "images/alice_et_leonie_notre_ecole.jpg", title: "Notre École", authors: "Alice & Léonie" },
-      { file: "Podcasts/2.wav", image: "images/efi_et_harmonie_les_marmottes.jpg", title: "Les Marmottes", authors: "Efi & Harmonie" },
-      { file: "Podcasts/3.wav", image: "images/eva_et_lyne_le_ski_alpin.jpg", title: "Le Ski Alpin", authors: "Eva & Lyne" },
-      { file: "Podcasts/4.wav", image: "images/indiana_mael_le_ski_club.jpg", title: "Le Ski Club", authors: "Indiana & Maël" },
-      { file: "Podcasts/5.wav", image: "images/jules.jpg", title: "Les Remontées Mécaniques", authors: "Jules & Emile" },
-      { file: "Podcasts/6.wav", image: "images/le_rap_tom_et_leo.jpg", title: "Le Rap", authors: "Tom & Leo" },
-      { file: "Podcasts/7.wav", image: "images/leonard_et_sandro_le_plan_de_l_arc.jpg", title: "Le Plan de l'Arc", authors: "Léonard & Sandro" },
-      { file: "Podcasts/8.wav", image: "images/les_abeilles_giulia_et_maya.jpg", title: "Les Abeilles", authors: "Giulia & Maya" },
-      { file: "Podcasts/9.wav", image: "images/les_energies_lohan.png", title: "Les Énergies", authors: "Lohan" },
-      { file: "Podcasts/10.wav", image: "images/amelie_et_thelma_le_malinois.jpeg", title: "Le Malinois", authors: "Amélie & Thelma" },
-      { file: "Podcasts/11.wav", image: "images/cassius_et_leonard_la_tortue_marine.jpeg", title: "La Tortue Marine", authors: "Cassius & Léonard" },
-      { file: "Podcasts/12.wav", image: "images/coupe.jpg", title: "Coupe du Monde de Ski", authors: "Clémentine & Marius" },
-      { file: "Podcasts/13.wav", image: "images/galette.png", title: "La Galette des Rois", authors: "Lucas & Nathan" },
-      { file: "Podcasts/14.wav", image: "images/mixage_katel_le_cheval.jpg", title: "Le Cheval", authors: "Katel" },
-      { file: "Podcasts/15.wav", image: "images/patinage.jpg", title: "Les Sports de Glace", authors: "Ella & Livia" },
-      { file: "Podcasts/16.wav", image: "images/nathan_final_la_poule.jpg", title: "La Poule", authors: "Nathan" },
-      { file: "Podcasts/17.wav", image: "images/pia_et_matys_le_guepard.jpg", title: "Le Guépard", authors: "Pia & Matys" },
-      { file: "Podcasts/18.wav", image: "images/thelma_l_air.jpeg", title: "L'Air", authors: "Thelma" }
-    ];
+    <div id="main-container">
+        <header>
+            <h1>Nos Podcasts</h1>
+        </header>
+        <div class="grid" id="grid"></div>
+    </div>
 
-    let currentAudio = null;
-    let currentCard = null;
-    let progressInterval = null;
+    <div class="stop-bar" id="stopBar">
+        <div id="info" style="font-weight: bold; color: #342f33;"></div>
+        <button onclick="stopAll()" style="background:var(--bg); color:white; border:none; padding:10px 20px; font-weight:bold;">STOP</button>
+    </div>
 
-    const grid = document.getElementById('grid');
-    const stopBar = document.getElementById('stopBar');
-    const nowPlayingTitle = document.getElementById('nowPlayingTitle');
+    <script>
+        const PODCASTS = [
+            { file: "Podcasts/1.wav", image: "images/alice_et_leonie_notre_ecole.jpg", title: "Notre École", authors: "Alice & Léonie" },
+            { file: "Podcasts/2.wav", image: "images/efi_et_harmonie_les_marmottes.jpg", title: "Les Marmottes", authors: "Efi & Harmonie" },
+            { file: "Podcasts/3.wav", image: "images/eva_et_lyne_le_ski_alpin.jpg", title: "Le Ski Alpin", authors: "Eva & Lyne" },
+            { file: "Podcasts/4.wav", image: "images/indiana_mael_le_ski_club.jpg", title: "Le Ski Club", authors: "Indiana & Maël" },
+            { file: "Podcasts/5.wav", image: "images/jules.jpg", title: "Les Remontées Mécaniques", authors: "Jules & Emile" },
+            { file: "Podcasts/6.wav", image: "images/le_rap_tom_et_leo.jpg", title: "Le Rap", authors: "Tom & Leo" },
+            { file: "Podcasts/7.wav", image: "images/leonard_et_sandro_le_plan_de_l_arc.jpg", title: "Le Plan de l'Arc", authors: "Léonard & Sandro" },
+            { file: "Podcasts/8.wav", image: "images/les_abeilles_giulia_et_maya.jpg", title: "Les Abeilles", authors: "Giulia & Maya" },
+            { file: "Podcasts/9.wav", image: "images/les_energies_lohan.png", title: "Les Énergies", authors: "Lohan" },
+            { file: "Podcasts/10.wav", image: "images/amelie_et_thelma_le_malinois.jpeg", title: "Le Malinois", authors: "Amélie & Thelma" },
+            { file: "Podcasts/11.wav", image: "images/cassius_et_leonard_la_tortue_marine.jpeg", title: "La Tortue Marine", authors: "Cassius & Léonard" },
+            { file: "Podcasts/12.wav", image: "images/coupe.jpg", title: "Coupe du Monde de Ski", authors: "Clémentine & Marius" },
+            { file: "Podcasts/13.wav", image: "images/galette.png", title: "La Galette des Rois", authors: "Lucas & Nathan" },
+            { file: "Podcasts/14.wav", image: "images/mixage_katel_le_cheval.jpg", title: "Le Cheval", authors: "Katel" },
+            { file: "Podcasts/15.wav", image: "images/patinage.jpg", title: "Les Sports de Glace", authors: "Ella & Livia" },
+            { file: "Podcasts/16.wav", image: "images/nathan_final_la_poule.jpg", title: "La Poule", authors: "Nathan" },
+            { file: "Podcasts/17.wav", image: "images/pia_et_matys_le_guepard.jpg", title: "Le Guépard", authors: "Pia & Matys" },
+            { file: "Podcasts/18.wav", image: "images/thelma_l_air.jpeg", title: "L'Air", authors: "Thelma" }
+        ];
 
-    PODCASTS.forEach((pod, idx) => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="thumb-wrap">
-          <img src="${pod.image}" alt="">
-          <div class="play-overlay">▶</div>
-        </div>
-        <div class="card-body">
-          <div class="card-title">${pod.authors}</div>
-          <div style="font-size:0.75rem; color:var(--muted)">${pod.title}</div>
-          <div class="progress-bar" id="p-${idx}"></div>
-        </div>
-      `;
-      card.onclick = () => {
-        if (currentCard === card) { stop(); return; }
-        stop();
-        currentAudio = new Audio(pod.file);
-        currentCard = card;
-        card.classList.add('playing');
-        nowPlayingTitle.textContent = pod.authors + " - " + pod.title;
-        stopBar.classList.add('visible');
-        currentAudio.play();
-        progressInterval = setInterval(() => {
-          document.getElementById('p-'+idx).style.width = (currentAudio.currentTime / currentAudio.duration * 100) + '%';
-        }, 400);
-        currentAudio.onended = stop;
-      };
-      grid.appendChild(card);
-    });
+        let audio = null;
+        let activeCard = null;
 
-    function stop() {
-      if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-      if (currentCard) { 
-        currentCard.querySelector('.progress-bar').style.width = '0%';
-        currentCard.classList.remove('playing'); 
-        currentCard = null; 
-      }
-      clearInterval(progressInterval);
-      stopBar.classList.remove('visible');
-    }
+        // LA FONCTION MAGIQUE POUR LE PLEIN ÉCRAN
+        function launchApp() {
+            const de = document.documentElement;
+            if (de.requestFullscreen) { de.requestFullscreen(); }
+            else if (de.webkitRequestFullscreen) { de.webkitRequestFullscreen(); }
+            
+            // On cache l'écran de démarrage
+            document.getElementById('fullscreen-setup').style.display = 'none';
+        }
 
-    document.getElementById('stopBtn').onclick = stop;
+        const grid = document.getElementById('grid');
+        PODCASTS.forEach((p, i) => {
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `<img src="${p.image}"><div class="card-body"><b>${p.authors}</b><br>${p.title}</div>`;
+            div.onclick = () => play(p, div);
+            grid.appendChild(div);
+        });
 
-    // Enregistre le service worker (nécessaire pour être une PWA installable)
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
-    }
-    // Force le plein écran au premier clic pour cacher l'interface Android
-document.addEventListener('click', function() {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(e => {
-      console.log("Plein écran refusé ou déjà actif");
-    });
-  }
-}, { once: true }); // Ne s'exécute qu'une seule fois
-  </script>
+        function play(p, el) {
+            if (activeCard === el) { stopAll(); return; }
+            stopAll();
+            audio = new Audio(p.file);
+            audio.play();
+            activeCard = el;
+            el.classList.add('playing');
+            document.getElementById('info').innerText = p.authors + " - " + p.title;
+            document.getElementById('stopBar').classList.add('visible');
+            audio.onended = stopAll;
+        }
+
+        function stopAll() {
+            if (audio) { audio.pause(); audio = null; }
+            if (activeCard) { activeCard.classList.remove('playing'); activeCard = null; }
+            document.getElementById('stopBar').classList.remove('visible');
+        }
+
+        // Empêcher le menu contextuel (clic droit / appui long)
+        window.oncontextmenu = function() { return false; }
+    </script>
 </body>
 </html>
