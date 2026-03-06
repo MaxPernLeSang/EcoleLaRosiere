@@ -1,204 +1,108 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>🎙️ Podcasts des Élèves</title>
+  
+  <link rel="manifest" href="manifest.json" />
+  
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&display=swap" rel="stylesheet" />
-  <link rel="manifest" href="manifest.json" />
+  
   <meta name="theme-color" content="#e71b7b" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
   <style>
-    /* ===== RESET & BASE ===== */
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg: #342f33;
-      --surface: #2a2629;
-      --card: #bfbab9;
-      --card-inner: #ffffff;
-      --accent: #e71b7b;
-      --accent-hover: #c41465;
-      --text: #ffffff;
-      --text-dark: #342f33;
-      --muted: #8e8988;
-      --radius: 12px;
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      --bg: #342f33; --surface: #2a2629; --card: #bfbab9;
+      --accent: #e71b7b; --text: #ffffff; --text-dark: #342f33;
+      --muted: #8e8988; --radius: 12px;
     }
 
-    html,
-    body {
-      width: 100%;
-      height: 100%; /* Important pour overscroll-behavior */
+    html, body {
+      width: 100%; height: 100%;
       background: var(--bg);
       font-family: 'Outfit', sans-serif;
       color: var(--text);
+      /* Bloque le refresh visuel de Chrome */
+      overscroll-behavior-y: none;
     }
 
-    body {
-      overflow-y: auto; /* Force le scroll vertical */
-      overflow-x: hidden;
-      /* C'EST CETTE LIGNE QUI BLOQUE LE REFRESH SANS CASSER LE SCROLL */
-      overscroll-behavior-y: none; 
-      -webkit-overflow-scrolling: touch; /* Scroll fluide sur iOS */
-    }
+    body { overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 
-    /* ===== HEADER ===== */
-    header {
-      text-align: center;
-      padding: 48px 20px 24px;
-    }
+    header { text-align: center; padding: 40px 20px 20px; }
+    header h1 { font-size: 2.5rem; font-weight: 900; text-transform: uppercase; }
+    header p { color: var(--muted); margin-top: 8px; }
 
-    header .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background-color: var(--accent);
-      border-radius: 4px;
-      padding: 6px 18px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-      color: white;
-    }
-
-    header h1 {
-      font-size: clamp(2rem, 5vw, 3.5rem);
-      font-weight: 900;
-      color: white;
-      text-transform: uppercase;
-      line-height: 1.1;
-    }
-
-    header p {
-      margin-top: 12px;
-      color: var(--muted);
-      font-size: 1.1rem;
-    }
-
-    /* ===== GRID ===== */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 24px;
-      padding: 40px 24px 140px; /* Espace pour la barre de stop */
-      max-width: 1400px;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+      padding: 20px 20px 140px;
+      max-width: 1200px;
       margin: 0 auto;
     }
 
-    @media (min-width: 1100px) { .grid { grid-template-columns: repeat(5, 1fr); } }
-    @media (max-width: 860px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 520px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-
-    /* ===== CARD ===== */
     .card {
-      background: var(--card);
-      border-radius: var(--radius);
-      overflow: hidden;
-      cursor: pointer;
-      transition: transform .2s ease, box-shadow .2s ease;
-      box-shadow: var(--shadow);
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
+      background: var(--card); border-radius: var(--radius);
+      overflow: hidden; cursor: pointer; transition: transform 0.2s;
+      user-select: none; -webkit-tap-highlight-color: transparent;
     }
+    .card:active { transform: scale(0.96); }
+    .card.playing { outline: 4px solid var(--accent); }
 
-    .card:active { transform: scale(0.98); }
-    .card.playing { box-shadow: 0 0 0 4px var(--accent); }
-
-    .thumb-wrap {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      background: #000;
-    }
-
-    .thumb-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
+    .thumb-wrap { position: relative; width: 100%; aspect-ratio: 1/1; background: #000; }
+    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
+    
     .play-overlay {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 60px; height: 60px;
-      background-color: var(--accent);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.5rem; color: white;
-      opacity: 0;
-      transition: opacity .2s ease;
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 50px; height: 50px; background: var(--accent);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s; color: white;
     }
+    .card.playing .play-overlay { opacity: 1; background: white; color: var(--accent); }
 
-    .card.playing .play-overlay { opacity: 1; background-color: white; color: var(--accent); }
+    .card-body { padding: 15px; background: white; color: var(--text-dark); }
+    .card-title { font-weight: 700; font-size: 0.9rem; text-transform: uppercase; }
 
-    .card-body { padding: 16px; background-color: white; color: var(--text-dark); }
-    .card-title { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; }
+    .progress-bar { height: 4px; background: var(--accent); width: 0%; margin-top: 10px; transition: width 0.3s; }
 
-    .progress-wrap { margin-top: 12px; height: 6px; background-color: #eee; border-radius: 3px; overflow: hidden; }
-    .progress-bar { height: 100%; background-color: var(--accent); width: 0%; transition: width .2s linear; }
-
-    /* ===== STOP BAR ===== */
     .stop-bar {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background-color: white;
-      border-top: 2px solid var(--accent);
-      display: flex; align-items: center; gap: 20px;
-      padding: 16px 24px;
-      transform: translateY(100%);
-      transition: transform .3s ease;
-      z-index: 1000;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 3px solid var(--accent);
+      display: flex; align-items: center; padding: 15px 25px;
+      transform: translateY(100%); transition: transform 0.3s ease;
+      z-index: 1000; color: var(--text-dark);
     }
-
     .stop-bar.visible { transform: translateY(0); }
-    .stop-bar .now-playing-info { flex: 1; overflow: hidden; color: var(--text-dark); }
-    .now-playing-title { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
     .stop-btn {
-      background-color: var(--bg);
-      border: none; border-radius: 4px;
-      color: #fff; font-family: 'Outfit', sans-serif;
-      padding: 12px 28px; cursor: pointer;
-      font-weight: 800; text-transform: uppercase;
+      background: var(--bg); color: white; border: none;
+      padding: 10px 20px; border-radius: 5px; font-weight: 800;
     }
   </style>
 </head>
-
 <body>
 
   <header>
-    <div class="badge">🎙️ Podcasts des Élèves</div>
     <h1>Nos Podcasts</h1>
-    <p>Appuie sur un podcast pour l'écouter</p>
+    <p>Clique sur une image pour écouter</p>
   </header>
 
   <div class="grid" id="grid"></div>
 
   <div class="stop-bar" id="stopBar">
-    <div class="now-playing-info">
-      <div style="font-size:0.7rem; color:var(--accent); font-weight:800;">EN COURS</div>
-      <div class="now-playing-title" id="nowPlayingTitle">—</div>
+    <div style="flex:1; overflow:hidden;">
+      <div style="font-size:0.7rem; color:var(--accent); font-weight:bold;">LECTURE EN COURS</div>
+      <div id="nowPlayingTitle" style="font-weight:700; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">—</div>
     </div>
-    <button class="stop-btn" id="stopBtn">⏹ Stop</button>
+    <button class="stop-btn" id="stopBtn">STOP</button>
   </div>
 
   <script>
-    // Liste simplifiée pour l'exemple
     const PODCASTS = [
       { file: "Podcasts/1.wav", image: "images/alice_et_leonie_notre_ecole.jpg", title: "Notre École", authors: "Alice & Léonie" },
       { file: "Podcasts/2.wav", image: "images/efi_et_harmonie_les_marmottes.jpg", title: "Les Marmottes", authors: "Efi & Harmonie" },
@@ -226,69 +130,55 @@
 
     const grid = document.getElementById('grid');
     const stopBar = document.getElementById('stopBar');
-    const stopBtn = document.getElementById('stopBtn');
     const nowPlayingTitle = document.getElementById('nowPlayingTitle');
 
-    function buildGrid() {
-      PODCASTS.forEach((pod, idx) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.dataset.idx = idx;
-        card.innerHTML = `
-          <div class="thumb-wrap">
-            <img src="${pod.image}" alt="">
-            <div class="play-overlay" id="play-icon-${idx}">▶</div>
-          </div>
-          <div class="card-body">
-            <div class="card-title">${pod.authors}</div>
-            <div style="font-size:0.8rem; color:var(--muted)">${pod.title}</div>
-            <div class="progress-wrap"><div class="progress-bar" id="prog-${idx}"></div></div>
-          </div>
-        `;
-        card.addEventListener('click', () => togglePlay(pod, card, idx));
-        grid.appendChild(card);
-      });
-    }
+    PODCASTS.forEach((pod, idx) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="thumb-wrap">
+          <img src="${pod.image}" alt="">
+          <div class="play-overlay">▶</div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">${pod.authors}</div>
+          <div style="font-size:0.75rem; color:var(--muted)">${pod.title}</div>
+          <div class="progress-bar" id="p-${idx}"></div>
+        </div>
+      `;
+      card.onclick = () => {
+        if (currentCard === card) { stop(); return; }
+        stop();
+        currentAudio = new Audio(pod.file);
+        currentCard = card;
+        card.classList.add('playing');
+        nowPlayingTitle.textContent = pod.authors + " - " + pod.title;
+        stopBar.classList.add('visible');
+        currentAudio.play();
+        progressInterval = setInterval(() => {
+          document.getElementById('p-'+idx).style.width = (currentAudio.currentTime / currentAudio.duration * 100) + '%';
+        }, 400);
+        currentAudio.onended = stop;
+      };
+      grid.appendChild(card);
+    });
 
-    function togglePlay(pod, card, idx) {
-      if (currentCard === card) { stopEverything(); return; }
-      stopEverything();
-
-      currentAudio = new Audio(pod.file);
-      currentCard = card;
-      card.classList.add('playing');
-      nowPlayingTitle.textContent = pod.authors + " — " + pod.title;
-      stopBar.classList.add('visible');
-
-      currentAudio.play();
-
-      progressInterval = setInterval(() => {
-        const prog = document.getElementById('prog-' + idx);
-        if (prog && currentAudio.duration) {
-          prog.style.width = (currentAudio.currentTime / currentAudio.duration * 100) + '%';
-        }
-      }, 300);
-
-      currentAudio.onended = stopEverything;
-    }
-
-    function stopEverything() {
+    function stop() {
       if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-      if (currentCard) {
-        const idx = currentCard.dataset.idx;
-        document.getElementById('prog-' + idx).style.width = '0%';
-        currentCard.classList.remove('playing');
-        currentCard = null;
+      if (currentCard) { 
+        currentCard.querySelector('.progress-bar').style.width = '0%';
+        currentCard.classList.remove('playing'); 
+        currentCard = null; 
       }
       clearInterval(progressInterval);
       stopBar.classList.remove('visible');
     }
 
-    stopBtn.onclick = stopEverything;
-    buildGrid();
+    document.getElementById('stopBtn').onclick = stop;
 
+    // Enregistre le service worker (nécessaire pour être une PWA installable)
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
+      navigator.serviceWorker.register('sw.js').catch(() => {});
     }
   </script>
 </body>
