@@ -3,180 +3,221 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎙️ Podcasts La Rosière</title>
+    <title>🎙️ Radio La Rosière</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #e71b7b; --bg: #342f33; }
+        :root { 
+            --accent: #e71b7b; 
+            --bg: #342f33; 
+            --card-bg: #bfbab9;
+        }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        /* BLOQUER LE REFRESH ET LE REBOND */
         html, body { 
             width: 100%; height: 100%; 
             background: var(--bg); 
             font-family: 'Outfit', sans-serif; 
-            overflow: hidden; /* On bloque le scroll global ici */
+            overflow: hidden; 
             overscroll-behavior: none;
         }
 
-        /* BOUTON PLEIN ÉCRAN (Indispensable pour Android) */
+        /* ÉCRAN DE DÉMARRAGE */
         #fullscreen-setup {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg); z-index: 9999;
+            background: var(--bg); z-index: 10000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             color: white; text-align: center; padding: 20px;
         }
         .btn-start {
             background: var(--accent); color: white; border: none;
-            padding: 20px 40px; font-size: 1.5rem; font-weight: 900;
-            border-radius: 50px; cursor: pointer; margin-top: 20px;
+            padding: 25px 50px; font-size: 1.8rem; font-weight: 900;
+            border-radius: 60px; cursor: pointer; margin-top: 30px;
+            box-shadow: 0 10px 0 #c41465;
+            transition: transform 0.1s;
+        }
+        .btn-start:active { transform: translateY(5px); box-shadow: 0 5px 0 #c41465; }
+
+        /* BARRE DE LECTURE EN HAUT */
+        #top-player {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: white; padding: 15px 25px; 
+            display: flex; align-items: center; justify-content: space-between;
+            transform: translateY(-100%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 2000;
+            border-bottom: 5px solid var(--accent);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        #top-player.visible { transform: translateY(0); }
+
+        .player-info { flex: 1; overflow: hidden; margin-right: 20px; }
+        .player-info b { display: block; color: var(--bg); text-transform: uppercase; font-size: 1rem; }
+        .player-info span { color: var(--accent); font-weight: bold; font-family: monospace; font-size: 1.1rem; }
+
+        .btn-stop {
+            background: var(--bg); color: white; border: none;
+            padding: 12px 25px; border-radius: 8px; font-weight: 900;
+            font-size: 1.1rem; cursor: pointer; text-transform: uppercase;
         }
 
-        /* ZONE DE SCROLL INTERNE (Pour que le scroll marche sans le refresh) */
+        /* ZONE DE SCROLL */
         #main-container {
             height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
-            padding: 20px;
+            padding: 20px; padding-top: 100px; /* Espace pour la barre du haut */
         }
 
-        header { text-align: center; padding: 40px 0; color: white; }
+        header { text-align: center; padding: 20px 0 40px; color: white; }
+        header h1 { font-size: 2.5rem; font-weight: 900; letter-spacing: -1px; }
+
         .grid { 
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
-            gap: 20px; max-width: 1200px; margin: 0 auto; padding-bottom: 150px;
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
+            gap: 25px; max-width: 1300px; margin: 0 auto; padding-bottom: 50px;
         }
-        .card { background: #bfbab9; border-radius: 12px; overflow: hidden; color: #342f33; }
-        .card img { width: 100%; aspect-ratio: 1; object-fit: cover; }
-        .card-body { padding: 15px; background: white; }
-        .card.playing { outline: 5px solid var(--accent); }
 
-        .stop-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: white; padding: 20px; display: flex;
-            align-items: center; justify-content: space-between;
-            transform: translateY(100%); transition: 0.3s; z-index: 1000;
-            border-top: 4px solid var(--accent);
+        /* CARTES */
+        .card { 
+            background: var(--card-bg); border-radius: 15px; 
+            overflow: hidden; cursor: pointer; position: relative;
+            transition: transform 0.2s;
         }
-        .stop-bar.visible { transform: translateY(0); }
+        .card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+        .card-body { padding: 15px; background: white; color: var(--bg); }
+        .card-body b { font-size: 1.1rem; }
+        .card.playing { outline: 6px solid var(--accent); transform: scale(1.02); }
+
+        /* BARRE DE PROGRESSION SUR LA CARTE */
+        .progress-container {
+            height: 6px; background: #eee; margin-top: 10px; 
+            border-radius: 3px; overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%; width: 0%; background: var(--accent);
+            transition: width 0.3s linear;
+        }
     </style>
 </head>
 <body>
 
     <div id="fullscreen-setup">
-        <h1>🎙️ Radio La Rosière</h1>
-        <p>Appuie sur le bouton pour lancer le mode tablette sans barres de navigation.</p>
-        <button class="btn-start" onclick="launchApp()">LANCER L'APPLICATION</button>
+        <div style="font-size: 5rem;">🎙️</div>
+        <h1>RADIO LA ROSIÈRE</h1>
+        <p>Prêt pour les podcasts des élèves ?</p>
+        <button class="btn-start" onclick="launchApp()">LANCER LE MODE TABLETTE</button>
+    </div>
+
+    <div id="top-player" hide-on-start>
+        <div class="player-info">
+            <b id="active-title">Titre du podcast</b>
+            <span id="active-time">0:00 / 0:00</span>
+        </div>
+        <button class="btn-stop" onclick="stopAll()">⏹ STOP</button>
     </div>
 
     <div id="main-container">
         <header>
             <h1>Nos Podcasts</h1>
+            <p style="opacity: 0.7;">Choisis un projet pour l'écouter</p>
         </header>
         <div class="grid" id="grid"></div>
     </div>
 
-    <div class="stop-bar" id="stopBar">
-        <div id="info" style="font-weight: bold; color: #342f33;"></div>
-        <button onclick="stopAll()" style="background:var(--bg); color:white; border:none; padding:10px 20px; font-weight:bold;">STOP</button>
-    </div>
-
     <script>
         const PODCASTS = [
-    { file: "Podcasts/1.wav", image: "images/alice_et_leonie_notre_ecole.jpg", title: "Notre École", authors: "Alice & Léonie" },
-    { file: "Podcasts/2.wav", image: "images/efi_et_harmonie_les_marmottes.jpg", title: "Les Marmottes", authors: "Efi & Harmonie" },
-    { file: "Podcasts/3.wav", image: "images/eva_et_lyne_le_ski_alpin.jpg", title: "Le Ski Alpin", authors: "Eva & Lyne" },
-    { file: "Podcasts/4.wav", image: "images/indiana_mael_le_ski_club.jpg", title: "Le Ski Club", authors: "Indiana & Maël" },
-    { file: "Podcasts/5.wav", image: "images/jules.jpg", title: "Les Remontées Mécaniques", authors: "Jules & Emile" },
-    { file: "Podcasts/6.wav", image: "images/le_rap_tom_et_leo.jpg", title: "Le Rap", authors: "Tom & Leo" },
-    { file: "Podcasts/7.wav", image: "images/leonard_et_sandro_le_plan_de_l_arc.jpg", title: "Le Plan de l'Arc", authors: "Léonard & Sandro" },
-    { file: "Podcasts/8.wav", image: "images/les_abeilles_giulia_et_maya.jpg", title: "Les Abeilles", authors: "Giulia & Maya" },
-    { file: "Podcasts/9.wav", image: "images/les_energies_lohan.png", title: "Les Énergies", authors: "Lohan" },
-    { file: "Podcasts/10.wav", image: "images/amelie_et_thelma_le_malinois.jpeg", title: "Le Malinois", authors: "Amélie & Thelma" },
-    { file: "Podcasts/11.wav", image: "images/cassius_et_leonard_la_tortue_marine.jpeg", title: "La Tortue Marine", authors: "Cassius & Léonard" },
-    { file: "Podcasts/12.wav", image: "images/coupe.jpg", title: "Coupe du Monde de Ski", authors: "Clémentine & Marius" },
-    { file: "Podcasts/13.wav", image: "images/galette.png", title: "La Galette des Rois", authors: "Lucas & Nathan" },
-    { file: "Podcasts/14.wav", image: "images/mixage_katel_le_cheval.jpg", title: "Le Cheval", authors: "Katel" },
-    { file: "Podcasts/15.wav", image: "images/patinage.jpg", title: "Les Sports de Glace", authors: "Ella & Livia" },
-    { file: "Podcasts/16.wav", image: "images/nathan_final_la_poule.jpg", title: "La Poule", authors: "Nathan" },
-    { file: "Podcasts/17.wav", image: "images/pia_et_matys_le_guepard.jpg", title: "Le Guépard", authors: "Pia & Matys" },
-    { file: "Podcasts/18.wav", image: "images/thelma_l_air.jpeg", title: "L'Air", authors: "Thelma" }
-];
+            { file: "Podcasts/1.wav", image: "images/alice_et_leonie_notre_ecole.jpg", title: "Notre École", authors: "Alice & Léonie" },
+            { file: "Podcasts/2.wav", image: "images/efi_et_harmonie_les_marmottes.jpg", title: "Les Marmottes", authors: "Efi & Harmonie" },
+            { file: "Podcasts/3.wav", image: "images/eva_et_lyne_le_ski_alpin.jpg", title: "Le Ski Alpin", authors: "Eva & Lyne" },
+            { file: "Podcasts/4.wav", image: "images/indiana_mael_le_ski_club.jpg", title: "Le Ski Club", authors: "Indiana & Maël" },
+            { file: "Podcasts/5.wav", image: "images/jules.jpg", title: "Les Remontées Mécaniques", authors: "Jules & Emile" },
+            { file: "Podcasts/6.wav", image: "images/le_rap_tom_et_leo.jpg", title: "Le Rap", authors: "Tom & Leo" },
+            { file: "Podcasts/7.wav", image: "images/leonard_et_sandro_le_plan_de_l_arc.jpg", title: "Le Plan de l'Arc", authors: "Léonard & Sandro" },
+            { file: "Podcasts/8.wav", image: "images/les_abeilles_giulia_et_maya.jpg", title: "Les Abeilles", authors: "Giulia & Maya" },
+            { file: "Podcasts/9.wav", image: "images/les_energies_lohan.png", title: "Les Énergies", authors: "Lohan" },
+            { file: "Podcasts/10.wav", image: "images/amelie_et_thelma_le_malinois.jpeg", title: "Le Malinois", authors: "Amélie & Thelma" },
+            { file: "Podcasts/11.wav", image: "images/cassius_et_leonard_la_tortue_marine.jpeg", title: "La Tortue Marine", authors: "Cassius & Léonard" },
+            { file: "Podcasts/12.wav", image: "images/coupe.jpg", title: "Coupe du Monde de Ski", authors: "Clémentine & Marius" },
+            { file: "Podcasts/13.wav", image: "images/galette.png", title: "La Galette des Rois", authors: "Lucas & Nathan" },
+            { file: "Podcasts/14.wav", image: "images/mixage_katel_le_cheval.jpg", title: "Le Cheval", authors: "Katel" },
+            { file: "Podcasts/15.wav", image: "images/patinage.jpg", title: "Les Sports de Glace", authors: "Ella & Livia" },
+            { file: "Podcasts/16.wav", image: "images/nathan_final_la_poule.jpg", title: "La Poule", authors: "Nathan" },
+            { file: "Podcasts/17.wav", image: "images/pia_et_matys_le_guepard.jpg", title: "Le Guépard", authors: "Pia & Matys" },
+            { file: "Podcasts/18.wav", image: "images/thelma_l_air.jpeg", title: "L'Air", authors: "Thelma" }
+        ];
 
-let audio = null;
-let activeCard = null;
-let timer = null; // Pour mettre à jour le temps
+        let audio = null;
+        let activeCard = null;
+        let timer = null;
 
-function launchApp() {
-    const de = document.documentElement;
-    if (de.requestFullscreen) { de.requestFullscreen(); }
-    else if (de.webkitRequestFullscreen) { de.webkitRequestFullscreen(); }
-    document.getElementById('fullscreen-setup').style.display = 'none';
-}
-
-const grid = document.getElementById('grid');
-PODCASTS.forEach((p, i) => {
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.innerHTML = `
-        <img src="${p.image}">
-        <div class="card-body">
-            <b>${p.authors}</b><br>${p.title}
-            <div style="height:4px; background:#eee; margin-top:8px; border-radius:2px; overflow:hidden;">
-                <div id="prog-${i}" style="height:100%; width:0%; background:var(--accent); transition: width 0.3s;"></div>
-            </div>
-        </div>`;
-    div.onclick = () => play(p, div, i);
-    grid.appendChild(div);
-});
-
-function play(p, el, idx) {
-    if (activeCard === el) { stopAll(); return; }
-    stopAll();
-
-    audio = new Audio(p.file);
-    activeCard = el;
-    el.classList.add('playing');
-    document.getElementById('stopBar').classList.add('visible');
-
-    audio.play();
-
-    // Mise à jour du temps et de la barre
-    timer = setInterval(() => {
-        if (audio && audio.duration) {
-            const current = formatTime(audio.currentTime);
-            const total = formatTime(audio.duration);
-            const percent = (audio.currentTime / audio.duration) * 100;
-            
-            // Met à jour le texte dans la barre de stop
-            document.getElementById('info').innerHTML = 
-                `<b>${p.authors}</b> — ${current} / ${total}`;
-            
-            // Met à jour la petite barre sur la carte
-            document.getElementById(`prog-${idx}`).style.width = percent + "%";
+        function launchApp() {
+            const de = document.documentElement;
+            if (de.requestFullscreen) { de.requestFullscreen(); }
+            else if (de.webkitRequestFullscreen) { de.webkitRequestFullscreen(); }
+            document.getElementById('fullscreen-setup').style.display = 'none';
         }
-    }, 500);
 
-    audio.onended = stopAll;
-}
+        const grid = document.getElementById('grid');
+        PODCASTS.forEach((p, i) => {
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `
+                <img src="${p.image}">
+                <div class="card-body">
+                    <b>${p.authors}</b>
+                    <p style="font-size:0.9rem; opacity:0.8">${p.title}</p>
+                    <div class="progress-container">
+                        <div id="prog-${i}" class="progress-bar"></div>
+                    </div>
+                </div>`;
+            div.onclick = () => play(p, div, i);
+            grid.appendChild(div);
+        });
 
-function stopAll() {
-    if (audio) { audio.pause(); audio = null; }
-    if (timer) { clearInterval(timer); timer = null; }
-    if (activeCard) { 
-        // On remet toutes les barres à zéro
-        const bars = document.querySelectorAll('[id^="prog-"]');
-        bars.forEach(b => b.style.width = "0%");
-        activeCard.classList.remove('playing'); 
-        activeCard = null; 
-    }
-    document.getElementById('stopBar').classList.remove('visible');
-}
+        function play(p, el, idx) {
+            if (activeCard === el) { stopAll(); return; }
+            stopAll();
 
-// Fonction pour transformer les secondes en 0:00
-function formatTime(secs) {
-    const min = Math.floor(secs / 60);
-    const s = Math.floor(secs % 60);
-    return min + ":" + (s < 10 ? "0" : "") + s;
-}
+            audio = new Audio(p.file);
+            activeCard = el;
+            el.classList.add('playing');
+            
+            document.getElementById('active-title').innerText = p.authors + " — " + p.title;
+            document.getElementById('top-player').classList.add('visible');
 
-window.oncontextmenu = function() { return false; }
+            audio.play();
+
+            timer = setInterval(() => {
+                if (audio && audio.duration) {
+                    const current = formatTime(audio.currentTime);
+                    const total = formatTime(audio.duration);
+                    const percent = (audio.currentTime / audio.duration) * 100;
+                    
+                    document.getElementById('active-time').innerText = `${current} / ${total}`;
+                    document.getElementById(`prog-${idx}`).style.width = percent + "%";
+                }
+            }, 300);
+
+            audio.onended = stopAll;
+        }
+
+        function stopAll() {
+            if (audio) { audio.pause(); audio = null; }
+            if (timer) { clearInterval(timer); timer = null; }
+            if (activeCard) { 
+                const bars = document.querySelectorAll('.progress-bar');
+                bars.forEach(b => b.style.width = "0%");
+                activeCard.classList.remove('playing'); 
+                activeCard = null; 
+            }
+            document.getElementById('top-player').classList.remove('visible');
+        }
+
+        function formatTime(secs) {
+            const min = Math.floor(secs / 60);
+            const s = Math.floor(secs % 60);
+            return min + ":" + (s < 10 ? "0" : "") + s;
+        }
+
+        window.oncontextmenu = function() { return false; }
     </script>
 </body>
 </html>
