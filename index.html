@@ -39,22 +39,24 @@
     html,
     body {
       width: 100%;
-      min-height: 100vh;
+      height: 100%; /* Important pour overscroll-behavior */
       background: var(--bg);
       font-family: 'Outfit', sans-serif;
       color: var(--text);
+    }
+
+    body {
+      overflow-y: auto; /* Force le scroll vertical */
       overflow-x: hidden;
-      /* EMPECHE LE REFRESH CHROME ANDROID */
-      overscroll-behavior-y: contain;
+      /* C'EST CETTE LIGNE QUI BLOQUE LE REFRESH SANS CASSER LE SCROLL */
+      overscroll-behavior-y: none; 
+      -webkit-overflow-scrolling: touch; /* Scroll fluide sur iOS */
     }
 
     /* ===== HEADER ===== */
     header {
-      position: relative;
-      z-index: 10;
       text-align: center;
       padding: 48px 20px 24px;
-      background-color: var(--bg);
     }
 
     header .badge {
@@ -77,7 +79,6 @@
       font-weight: 900;
       color: white;
       text-transform: uppercase;
-      letter-spacing: -0.02em;
       line-height: 1.1;
     }
 
@@ -85,32 +86,21 @@
       margin-top: 12px;
       color: var(--muted);
       font-size: 1.1rem;
-      font-weight: 400;
     }
 
     /* ===== GRID ===== */
     .grid {
-      position: relative;
-      z-index: 10;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
       gap: 24px;
-      padding: 40px 24px 120px; /* Ajout de marge en bas pour la barre de stop */
+      padding: 40px 24px 140px; /* Espace pour la barre de stop */
       max-width: 1400px;
       margin: 0 auto;
     }
 
-    @media (min-width: 1100px) {
-      .grid { grid-template-columns: repeat(5, 1fr); gap: 20px; }
-    }
-
-    @media (max-width: 860px) {
-      .grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    }
-
-    @media (max-width: 520px) {
-      .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    }
+    @media (min-width: 1100px) { .grid { grid-template-columns: repeat(5, 1fr); } }
+    @media (max-width: 860px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 520px) { .grid { grid-template-columns: repeat(2, 1fr); } }
 
     /* ===== CARD ===== */
     .card {
@@ -118,26 +108,19 @@
       border-radius: var(--radius);
       overflow: hidden;
       cursor: pointer;
-      border: none;
       transition: transform .2s ease, box-shadow .2s ease;
-      position: relative;
       box-shadow: var(--shadow);
       user-select: none;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .card:hover, .card:active {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-    }
-
+    .card:active { transform: scale(0.98); }
     .card.playing { box-shadow: 0 0 0 4px var(--accent); }
 
     .thumb-wrap {
       position: relative;
       width: 100%;
       aspect-ratio: 1 / 1;
-      overflow: hidden;
       background: #000;
     }
 
@@ -146,77 +129,53 @@
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: opacity .3s ease;
     }
 
     .play-overlay {
       position: absolute;
-      z-index: 3;
-      top: 50%;
-      left: 50%;
+      top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 60px;
-      height: 60px;
+      width: 60px; height: 60px;
       background-color: var(--accent);
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.5rem;
-      color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; color: white;
       opacity: 0;
-      transition: opacity .2s ease, transform .2s ease;
+      transition: opacity .2s ease;
     }
 
-    .card:hover .play-overlay, .card.playing .play-overlay { opacity: 1; }
-    .card.playing .play-overlay { background-color: white; color: var(--accent); }
+    .card.playing .play-overlay { opacity: 1; background-color: white; color: var(--accent); }
 
     .card-body { padding: 16px; background-color: white; color: var(--text-dark); }
-    .card-title {
-      font-size: 0.95rem; font-weight: 700; line-height: 1.4;
-      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2;
-      -webkit-box-orient: vertical; overflow: hidden;
-      text-transform: uppercase; letter-spacing: 0.02em;
-    }
+    .card-title { font-size: 0.95rem; font-weight: 700; text-transform: uppercase; }
 
     .progress-wrap { margin-top: 12px; height: 6px; background-color: #eee; border-radius: 3px; overflow: hidden; }
     .progress-bar { height: 100%; background-color: var(--accent); width: 0%; transition: width .2s linear; }
-    .duration-badge { margin-top: 8px; display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--muted); font-weight: 600; }
 
     /* ===== STOP BAR ===== */
     .stop-bar {
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      z-index: 100;
       background-color: white;
       border-top: 2px solid var(--accent);
-      display: flex;
-      align-items: center;
-      gap: 20px;
+      display: flex; align-items: center; gap: 20px;
       padding: 16px 24px;
       transform: translateY(100%);
       transition: transform .3s ease;
-      color: var(--text-dark);
-      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
     }
 
     .stop-bar.visible { transform: translateY(0); }
-    .stop-bar .now-playing-info { flex: 1; overflow: hidden; }
-    .stop-bar .now-playing-label { font-size: 0.75rem; color: var(--accent); font-weight: 800; text-transform: uppercase; }
-    .stop-bar .now-playing-title { font-size: 1.1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; }
+    .stop-bar .now-playing-info { flex: 1; overflow: hidden; color: var(--text-dark); }
+    .now-playing-title { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .stop-btn {
       background-color: var(--bg);
       border: none; border-radius: 4px;
       color: #fff; font-family: 'Outfit', sans-serif;
-      font-size: 1rem; font-weight: 800;
       padding: 12px 28px; cursor: pointer;
-      display: flex; align-items: center; gap: 8px;
-      text-transform: uppercase;
+      font-weight: 800; text-transform: uppercase;
     }
-    .stop-btn:hover { background-color: var(--accent); }
-
-    .no-results { grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--muted); font-size: 1.1rem; }
   </style>
 </head>
 
@@ -232,14 +191,14 @@
 
   <div class="stop-bar" id="stopBar">
     <div class="now-playing-info">
-      <div class="now-playing-label">▶ En cours</div>
+      <div style="font-size:0.7rem; color:var(--accent); font-weight:800;">EN COURS</div>
       <div class="now-playing-title" id="nowPlayingTitle">—</div>
     </div>
     <button class="stop-btn" id="stopBtn">⏹ Stop</button>
   </div>
 
   <script>
-    // ===== DATA =====
+    // Liste simplifiée pour l'exemple
     const PODCASTS = [
       { file: "Podcasts/1.wav", image: "images/alice_et_leonie_notre_ecole.jpg", title: "Notre École", authors: "Alice & Léonie" },
       { file: "Podcasts/2.wav", image: "images/efi_et_harmonie_les_marmottes.jpg", title: "Les Marmottes", authors: "Efi & Harmonie" },
@@ -261,7 +220,6 @@
       { file: "Podcasts/18.wav", image: "images/thelma_l_air.jpeg", title: "L'Air", authors: "Thelma" }
     ];
 
-    // ===== STATE =====
     let currentAudio = null;
     let currentCard = null;
     let progressInterval = null;
@@ -271,25 +229,20 @@
     const stopBtn = document.getElementById('stopBtn');
     const nowPlayingTitle = document.getElementById('nowPlayingTitle');
 
-    function buildGrid(items) {
-      grid.innerHTML = '';
-      if (items.length === 0) {
-        grid.innerHTML = '<div class="no-results"><span class="emoji">🔍</span>Aucun podcast trouvé…</div>';
-        return;
-      }
-      items.forEach((pod, idx) => {
+    function buildGrid() {
+      PODCASTS.forEach((pod, idx) => {
         const card = document.createElement('div');
         card.className = 'card';
         card.dataset.idx = idx;
         card.innerHTML = `
           <div class="thumb-wrap">
-            <img src="${pod.image}?t=${Date.now()}" alt="${pod.title}" />
+            <img src="${pod.image}" alt="">
             <div class="play-overlay" id="play-icon-${idx}">▶</div>
           </div>
           <div class="card-body">
-            <div class="card-title">${pod.authors}<br><span style="color:var(--muted);font-weight:600">${pod.title}</span></div>
+            <div class="card-title">${pod.authors}</div>
+            <div style="font-size:0.8rem; color:var(--muted)">${pod.title}</div>
             <div class="progress-wrap"><div class="progress-bar" id="prog-${idx}"></div></div>
-            <div class="duration-badge"><span id="dur-${idx}">—</span></div>
           </div>
         `;
         card.addEventListener('click', () => togglePlay(pod, card, idx));
@@ -297,74 +250,45 @@
       });
     }
 
-    buildGrid(PODCASTS);
-
     function togglePlay(pod, card, idx) {
-      const isSameCard = currentCard === card;
+      if (currentCard === card) { stopEverything(); return; }
       stopEverything();
-      if (isSameCard) return;
 
-      const audio = new Audio(pod.file);
-      currentAudio = audio;
+      currentAudio = new Audio(pod.file);
       currentCard = card;
       card.classList.add('playing');
-      document.getElementById('play-icon-' + idx).textContent = '⏸';
-      nowPlayingTitle.textContent = pod.authors + ' — ' + pod.title;
+      nowPlayingTitle.textContent = pod.authors + " — " + pod.title;
       stopBar.classList.add('visible');
 
-      audio.play().catch(() => { });
-
-      audio.addEventListener('loadedmetadata', () => {
-        document.getElementById('dur-' + idx).textContent = formatTime(audio.duration);
-      });
+      currentAudio.play();
 
       progressInterval = setInterval(() => {
         const prog = document.getElementById('prog-' + idx);
-        if (prog && audio.duration) {
-          prog.style.width = (audio.currentTime / audio.duration * 100) + '%';
-          document.getElementById('dur-' + idx).textContent = formatTime(audio.currentTime) + ' / ' + formatTime(audio.duration);
+        if (prog && currentAudio.duration) {
+          prog.style.width = (currentAudio.currentTime / currentAudio.duration * 100) + '%';
         }
       }, 300);
 
-      audio.addEventListener('ended', stopEverything);
+      currentAudio.onended = stopEverything;
     }
 
     function stopEverything() {
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio = null;
-      }
+      if (currentAudio) { currentAudio.pause(); currentAudio = null; }
       if (currentCard) {
-        currentCard.classList.remove('playing');
         const idx = currentCard.dataset.idx;
-        const icon = document.getElementById('play-icon-' + idx);
-        if (icon) icon.textContent = '▶';
+        document.getElementById('prog-' + idx).style.width = '0%';
+        currentCard.classList.remove('playing');
         currentCard = null;
       }
       clearInterval(progressInterval);
       stopBar.classList.remove('visible');
     }
 
-    stopBtn.addEventListener('click', stopEverything);
-
-    function formatTime(s) {
-      if (!isFinite(s)) return '—';
-      const m = Math.floor(s / 60);
-      const sec = Math.floor(s % 60);
-      return m + ':' + String(sec).padStart(2, '0');
-    }
-
-    // ===== SECURITE ANTI-REFRESH JS =====
-    window.addEventListener('touchmove', function(e) {
-      if (window.scrollY <= 0 && e.touches[0].pageY > 0) {
-        // Bloque le geste si on tente de tirer vers le bas alors qu'on est déjà en haut
-      }
-    }, { passive: true });
+    stopBtn.onclick = stopEverything;
+    buildGrid();
 
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => { });
-      });
+      navigator.serviceWorker.register('sw.js');
     }
   </script>
 </body>
